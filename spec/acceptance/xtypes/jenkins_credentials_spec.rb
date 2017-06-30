@@ -32,6 +32,35 @@ describe 'jenkins_credentials' do
         end
       end
 
+      context 'ConduitCredentialsImpl' do
+        it 'should work with no errors' do
+          pending('puppet_helper.groovy implementation missing, see https://github.com/jenkinsci/puppet-jenkins/issues/753')
+          pp = base_manifest + <<-EOS
+            jenkins_credentials { '002224bd-60cb-49f3-a314-d0f73f82233d':
+              ensure      => 'present',
+              description => 'phabricator-jenkins-conduit',
+              domain      => undef,
+              impl        => 'ConduitCredentialsImpl',
+              token       => '{PRIVATE TOKEN}',
+              url         => 'https://my-phabricator-repo.com',
+            }
+          EOS
+
+          apply2(pp)
+        end
+        # XXX need to properly compare the XML doc
+        # trying to match anything other than the id this way might match other
+        # credentials
+        describe file('/var/lib/jenkins/credentials.xml') do
+          it {
+            pending('puppet_helper.groovy implementation missing, see https://github.com/jenkinsci/puppet-jenkins/issues/753')
+            should contain '<id>002224bd-60cb-49f3-a314-d0f73f82233d</id>'
+          }
+        end
+      end
+
+
+>>>>>>> 23df776... Merge pull request #752 from elconas/fix_749
       context 'BasicSSHUserPrivateKey' do
         it 'should work with no errors' do
           pp = base_manifest + <<-EOS
@@ -42,7 +71,7 @@ describe 'jenkins_credentials' do
               description => 'bar',
               domain      => undef,
               impl        => 'BasicSSHUserPrivateKey',
-              passphrase  => '',
+              passphrase  => undef,
               private_key => '-----BEGIN RSA PRIVATE KEY----- ...',
               scope       => 'SYSTEM',
               username    => 'robin',

@@ -138,10 +138,50 @@
 #   - CLI installation (both implicit and explicit) requires the unzip command
 #
 #
-# cli_ssh_keyfile = undef (default)
+# @param cli_remoting_free
+#   Weather to use the new Jenkins CLI introduced in Jenkins 2.54 and Jenkins
+#   2.46.2 LTS and later (see https://issues.jenkins-ci.org/browse/JENKINS-41745)
+#   Can be true, false or undef. When undef, then heuristics will be used based
+#   on $repo, $lts and $version.
+#
+# @param cli_ssh_keyfile
 #   Provides the location of an ssh private key file to make authenticated
 #   connections to the Jenkins CLI.
 #
+# @param cli_username
+#   Provides the username for authenticating to Jenkins via username and
+#   password.
+#
+# @param cli_password
+#   Provides the password for authenticating to Jenkins via username and
+#   password. Needed if cli_username is specified.
+#
+# @param cli_password_file
+#   Provides the password file for authenticating to Jenkins via username and
+#   password. Needed if cli_username is specified and cli_password is undefined.
+#
+# @param cli_tries
+#   Retries until giving up talking to jenkins API
+#
+# @param cli_try_sleep
+#   Seconds between tries to contact jenkins API
+#
+# @param port
+#   Jenkins listening HTTP port
+#
+#   Note that this value is used for CLI communication and firewall
+#   configuration.  It does not configure the port on which the jenkins service
+#   listens. (see config_hash)
+# @param libdir
+#   Path to jenkins core files
+#
+#   * Redhat: ``/usr/lib/jenkins``
+#   * Debian: ``/usr/share/jenkins``
+#
+# @param sysconfdir
+#   Controls the path to the "sysconfig" file that stores jenkins service
+#   start-up variables
+>>>>>>> 23df776... Merge pull request #752 from elconas/fix_749
 #
 # cli_tries = 10 (default)
 #   Retries until giving up talking to jenkins API
@@ -169,40 +209,49 @@
 #
 #
 class jenkins(
-  $version            = $jenkins::params::version,
-  $lts                = $jenkins::params::lts,
-  $repo               = $jenkins::params::repo,
-  $package_name       = $jenkins::params::package_name,
-  $direct_download    = $::jenkins::params::direct_download,
-  $package_cache_dir  = $jenkins::params::package_cache_dir,
-  $package_provider   = $jenkins::params::package_provider,
-  $service_enable     = $jenkins::params::service_enable,
-  $service_ensure     = $jenkins::params::service_ensure,
-  $service_provider   = $jenkins::params::service_provider,
-  $config_hash        = {},
-  $plugin_hash        = {},
-  $job_hash           = {},
-  $user_hash          = {},
-  $configure_firewall = false,
-  $install_java       = $jenkins::params::install_java,
-  $repo_proxy         = undef,
-  $proxy_host         = undef,
-  $proxy_port         = undef,
-  $no_proxy_list      = undef,
-  $cli                = true,
-  $cli_ssh_keyfile    = undef,
-  $cli_tries          = $jenkins::params::cli_tries,
-  $cli_try_sleep      = $jenkins::params::cli_try_sleep,
-  $port               = $jenkins::params::port,
-  $libdir             = $jenkins::params::libdir,
-  $manage_datadirs    = $jenkins::params::manage_datadirs,
-  $localstatedir      = $::jenkins::params::localstatedir,
-  $executors          = undef,
-  $slaveagentport     = undef,
-  $manage_user        = $::jenkins::params::manage_user,
-  $user               = $::jenkins::params::user,
-  $manage_group       = $::jenkins::params::manage_group,
-  $group              = $::jenkins::params::group,
+  $version              = $jenkins::params::version,
+  $lts                  = $jenkins::params::lts,
+  $repo                 = $jenkins::params::repo,
+  $package_name         = $jenkins::params::package_name,
+  $direct_download      = $::jenkins::params::direct_download,
+  $package_cache_dir    = $jenkins::params::package_cache_dir,
+  $package_provider     = $jenkins::params::package_provider,
+  $manage_service       = true,
+  $service_enable       = $jenkins::params::service_enable,
+  $service_ensure       = $jenkins::params::service_ensure,
+  $service_provider     = $jenkins::params::service_provider,
+  $config_hash          = {},
+  $plugin_hash          = {},
+  $job_hash             = {},
+  $user_hash            = {},
+  $configure_firewall   = false,
+  $install_java         = $jenkins::params::install_java,
+  $repo_proxy           = undef,
+  $proxy_host           = undef,
+  $proxy_port           = undef,
+  $no_proxy_list        = undef,
+  $cli                  = true,
+  $cli_ssh_keyfile      = undef,
+  $cli_username         = undef,
+  $cli_password         = undef,
+  $cli_password_file    = undef,
+  $cli_remoting_free    = undef,
+  $cli_tries            = $jenkins::params::cli_tries,
+  $cli_try_sleep        = $jenkins::params::cli_try_sleep,
+  $port                 = $jenkins::params::port,
+  $libdir               = $jenkins::params::libdir,
+  $sysconfdir           = $jenkins::params::sysconfdir,
+  $manage_datadirs      = $jenkins::params::manage_datadirs,
+  $localstatedir        = $::jenkins::params::localstatedir,
+  $executors            = undef,
+  $slaveagentport       = undef,
+  $manage_user          = $::jenkins::params::manage_user,
+  $user                 = $::jenkins::params::user,
+  $manage_group         = $::jenkins::params::manage_group,
+  $group                = $::jenkins::params::group,
+  $default_plugins      = $::jenkins::params::default_plugins,
+  $default_plugins_host = $::jenkins::params::default_plugins_host,
+  $purge_plugins        = $::jenkins::params::purge_plugins,
 ) inherits jenkins::params {
 
   validate_string($version)
@@ -227,6 +276,10 @@ class jenkins(
   if $no_proxy_list { validate_array($no_proxy_list) }
   validate_bool($cli)
   if $cli_ssh_keyfile { validate_absolute_path($cli_ssh_keyfile) }
+  if $cli_username { validate_string($cli_username) }
+  if $cli_password { validate_string($cli_password) }
+  if $cli_password_file { validate_absolute_path($cli_password_file) }
+  if $cli_remoting_free != undef { validate_bool($cli_remoting_free) }
   validate_integer($cli_tries)
   validate_integer($cli_try_sleep)
   validate_integer($port)
@@ -239,6 +292,81 @@ class jenkins(
   validate_string($user)
   validate_bool($manage_group)
   validate_string($group)
+
+  ## determine if we must use the new CLI
+  if $cli_remoting_free == undef {
+    notice("INFO: Using the automatic detection of new cli mode (See https://issues.jenkins-ci.org/browse/JENKINS-41745), use \$::jenkins::cli_remoting_free=(true|false) to enable or disable explicitly")
+    # Heuristics (default)
+    # We try to "guess" if a new CLI version of jenkins is
+    # in use. If we can be sure, we enable new CLI mode automatically.
+    # If not, we keep the old way and print a hint about
+    # the explicit mode (this is true for custom repo setups,
+    # that do not mirror the Jenkins repo, but release jenkins
+    # versions based on repo stages and not pinning in puppet)
+    if $repo {
+      if $lts {
+        # we use a LTS version, so new cli is included in 2.46.2
+        if $version == 'latest' {
+          $_use_new_cli = true
+        } elsif $version == 'installed' {
+          $_use_new_cli = false
+        } elsif $version =~ /\d+\.\d+/ and versioncmp($version,'2.46.2') >= 0 {
+          $_use_new_cli = true
+        } else {
+          $_use_new_cli = false
+        }
+      } else {
+        # we use a regular version, so new cli is included in 2.54
+        if $version == 'latest' {
+          $_use_new_cli = true
+        } elsif $version == 'installed' {
+          $_use_new_cli = false
+        } elsif $version =~ /\d+\.\d+/ and versioncmp($version,'2.54') >= 0 {
+          $_use_new_cli = true
+        } else {
+          $_use_new_cli = false
+        }
+      }
+    } else {
+      # Repo not managed, so we do not know if it is a LTS or regular version
+      if $version =~ /\d+\.\d+/ and versioncmp($version,'2.54') >= 0 {
+        $_use_new_cli = true
+      } else {
+        $_use_new_cli = false
+      }
+    }
+  } else {
+    $_use_new_cli = str2bool($cli_remoting_free)
+  }
+
+  # Construct the cli auth argument used in cli and cli_helper
+  if $cli_ssh_keyfile {
+    # SSH key auth
+    if $_use_new_cli {
+      if empty($cli_username) {
+        fail('ERROR: Latest remoting free CLI (see https://issues.jenkins-ci.org/browse/JENKINS-41745) needs username for SSH Access (\$::jenkins::cli_username)')
+      }
+      $_cli_auth_arg = "-i '${cli_ssh_keyfile}' -ssh -user '${cli_username}'"
+    } else {
+      $_cli_auth_arg = "-i '${cli_ssh_keyfile}'"
+    }
+  } elsif !empty($cli_username) {
+    # Username / Password auth (needed for AD and other Auth Realms)
+    if $_use_new_cli {
+      if !empty($cli_password) {
+        $_cli_auth_arg = "-auth '${cli_username}:${cli_password}'"
+      } elsif !empty($cli_password_file) {
+        $_cli_auth_arg = "-auth '@${cli_password_file}'"
+      } else {
+        fail('ERROR: Need cli_password or cli_password_file if cli_username is specified')
+      }
+    } else {
+      fail('ERROR: Due to https://issues.jenkins-ci.org/browse/JENKINS-12543 username and password mode are only supported for the non-remoting CLI mode (see https://issues.jenkins-ci.org/browse/JENKINS-41745)')
+    }
+  } else {
+    # default = no auth
+    $_cli_auth_arg = undef
+  }
 
   $plugin_dir = "${localstatedir}/plugins"
   $job_dir = "${localstatedir}/jobs"
