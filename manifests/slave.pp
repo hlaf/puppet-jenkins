@@ -79,6 +79,9 @@
 #   parameter so the `::jenkins` class does not need to be the catalog for
 #   slave only nodes.
 #
+# [*java_cmd*]
+#   Path to the java command in ${defaults_location}/jenkins-slave. Defaults to '/usr/bin/java'
+#
 
 # === Examples
 #
@@ -119,6 +122,7 @@ class jenkins::slave (
   $source                   = undef,
   $java_args                = undef,
   $proxy_server             = undef,
+  $java_cmd                 = '/usr/bin/java',
 ) inherits jenkins::params {
   validate_string($slave_name)
   validate_string($description)
