@@ -181,7 +181,6 @@
 # @param sysconfdir
 #   Controls the path to the "sysconfig" file that stores jenkins service
 #   start-up variables
->>>>>>> 23df776... Merge pull request #752 from elconas/fix_749
 #
 # cli_tries = 10 (default)
 #   Retries until giving up talking to jenkins API
