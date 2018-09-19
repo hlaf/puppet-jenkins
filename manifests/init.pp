@@ -425,9 +425,22 @@ class jenkins(
        $config_hash and
        $config_hash['JENKINS_HTTPS_PORT'] and
        $config_hash['JENKINS_HTTPS_PORT']['value'] {
+         
+      if $config_hash['JENKINS_HTTPS_KEYSTORE'] and
+         $config_hash['JENKINS_HTTPS_KEYSTORE']['value'] {
+        $https_keystore = $config_hash['JENKINS_HTTPS_KEYSTORE']['value']
+        
+        if $config_hash['JENKINS_HTTPS_KEYSTORE_PASSWORD'] and
+           $config_hash['JENKINS_HTTPS_KEYSTORE_PASSWORD']['value'] {
+          $https_keystore_password = $config_hash['JENKINS_HTTPS_KEYSTORE_PASSWORD']['value']
+        }
+      }
+      
       class { 'jenkins::cli':
-        protocol => 'https',
-        port     => $config_hash['JENKINS_HTTPS_PORT']['value'],
+        protocol                => 'https',
+        port                    => $config_hash['JENKINS_HTTPS_PORT']['value'],
+        https_keystore          => $https_keystore,
+        https_keystore_password => $https_keystore_password,
       }
       class { 'jenkins::cli_helper':
         protocol => 'https',

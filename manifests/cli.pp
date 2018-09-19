@@ -3,8 +3,10 @@
 # Allow Jenkins commands to be issued from the command line
 #
 class jenkins::cli (
-  $port     = undef,
-  $protocol = 'http',  
+  $port                    = undef,
+  $protocol                = 'http',
+  $https_keystore          = undef,
+  $https_keystore_password = undef,
 ) {
   if $caller_module_name != $module_name {
     fail("Use of private class ${name} by ${caller_module_name}")
@@ -59,10 +61,19 @@ class jenkins::cli (
     default => $::jenkins::cli::config::url,
   }
 
+  if $https_keystore {
+    $https_keystore_arg = "-Djavax.net.ssl.trustStore=${https_keystore}"
+    if $https_keystore_password {
+      $https_keystore_pass_arg = "-Djavax.net.ssl.trustStorePassword=${$https_keystore_password}"
+    }
+  }
+
   # The jenkins cli command with required parameter(s)
   $cmd = join(
     delete_undef_values([
       'java',
+      $https_keystore_arg,
+      $https_keystore_pass_arg,
       "-jar ${::jenkins::cli::jar}",
       "-s ${url}",
       $::jenkins::_cli_auth_arg,
