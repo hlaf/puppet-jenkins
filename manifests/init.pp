@@ -443,8 +443,10 @@ class jenkins(
         https_keystore_password => $https_keystore_password,
       }
       class { 'jenkins::cli_helper':
-        protocol => 'https',
-        port     => $config_hash['JENKINS_HTTPS_PORT']['value'],
+        protocol                => 'https',
+        port                    => $config_hash['JENKINS_HTTPS_PORT']['value'],
+        https_keystore          => $https_keystore,
+        https_keystore_password => $https_keystore_password,
       }
     } else {
       include jenkins::cli

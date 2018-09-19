@@ -10,9 +10,11 @@
 #   directly
 #
 class jenkins::cli_helper (
-  $ssh_keyfile = $::jenkins::cli_ssh_keyfile,
-  $protocol    = 'http',
-  $port        = undef,
+  $ssh_keyfile             = $::jenkins::cli_ssh_keyfile,
+  $port                    = undef,
+  $protocol                = 'http',
+  $https_keystore          = undef,
+  $https_keystore_password = undef,
 ) {
   include ::jenkins
   include ::jenkins::cli
@@ -41,14 +43,28 @@ class jenkins::cli_helper (
     info("Using jenkins::cli_helper(${ssh_keyfile}) is deprecated and will be removed in the next major version of this module")
   }
 
+  $url = $::jenkins::cli::config::url ? {
+    undef   => "${protocol}://127.0.0.1:${port_}${prefix}",
+    default => $::jenkins::cli::config::url,
+  }
+
+  if $https_keystore {
+    $https_keystore_arg = "-Djavax.net.ssl.trustStore=${https_keystore}"
+    if $https_keystore_password {
+      $https_keystore_pass_arg = "-Djavax.net.ssl.trustStorePassword=${$https_keystore_password}"
+    }
+  }
+
   $helper_cmd = join(
     delete_undef_values([
       '/bin/cat',
       $helper_groovy,
       '|',
       '/usr/bin/java',
+      $https_keystore_arg,
+      $https_keystore_pass_arg,
       "-jar ${::jenkins::cli::jar}",
-      "-s ${protocol}://127.0.0.1:${port_}${prefix}",
+      "-s ${url}",
       $::jenkins::_cli_auth_arg,
       'groovy ='
     ]),
