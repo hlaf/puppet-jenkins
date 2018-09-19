@@ -11,6 +11,8 @@
 #
 class jenkins::cli_helper (
   $ssh_keyfile = $::jenkins::cli_ssh_keyfile,
+  $protocol    = 'http',
+  $port        = undef,
 ) {
   include ::jenkins
   include ::jenkins::cli
@@ -23,7 +25,7 @@ class jenkins::cli_helper (
 
   $libdir = $::jenkins::libdir
   $cli_jar = $::jenkins::cli::jar
-  $port = jenkins_port()
+  $port_ = $port ? { undef => jenkins_port(), default => $port }
   $prefix = jenkins_prefix()
   $helper_groovy = "${libdir}/puppet_helper.groovy"
 
@@ -46,7 +48,7 @@ class jenkins::cli_helper (
       '|',
       '/usr/bin/java',
       "-jar ${::jenkins::cli::jar}",
-      "-s http://127.0.0.1:${port}${prefix}",
+      "-s ${protocol}://127.0.0.1:${port_}${prefix}",
       $::jenkins::_cli_auth_arg,
       'groovy ='
     ]),

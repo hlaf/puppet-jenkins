@@ -421,7 +421,10 @@ class jenkins(
 
   if $cli {
     include jenkins::cli
-    include jenkins::cli_helper
+    class { 'jenkins::cli_helper':
+      protocol => 'https',
+      port     => $port,
+    }
   }
 
   if $executors {
