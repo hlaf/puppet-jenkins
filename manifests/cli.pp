@@ -54,12 +54,17 @@ class jenkins::cli (
   $port_ = $port ? { undef => jenkins_port(), default => $port }
   $prefix = jenkins_prefix()
 
+  $url = $::jenkins::cli::config::url ? {
+    undef   => "${protocol}://localhost:${port_}${prefix}",
+    default => $::jenkins::cli::config::url,
+  }
+
   # The jenkins cli command with required parameter(s)
   $cmd = join(
     delete_undef_values([
       'java',
       "-jar ${::jenkins::cli::jar}",
-      "-s ${protocol}://localhost:${port_}${prefix}",
+      "-s ${url}",
       $::jenkins::_cli_auth_arg,
     ]),
     ' '
