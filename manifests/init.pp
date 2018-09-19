@@ -234,6 +234,7 @@ class jenkins(
   $cli_username         = undef,
   $cli_password         = undef,
   $cli_password_file    = undef,
+  $cli_prefer_ssl       = true,
   $cli_remoting_free    = undef,
   $cli_tries            = $jenkins::params::cli_tries,
   $cli_try_sleep        = $jenkins::params::cli_try_sleep,
@@ -420,10 +421,21 @@ class jenkins(
   }
 
   if $cli {
-    include jenkins::cli
-    class { 'jenkins::cli_helper':
-      protocol => 'https',
-      port     => $port,
+    if $cli_prefer_ssl and
+       $config_hash and
+       $config_hash['JENKINS_HTTPS_PORT'] and
+       $config_hash['JENKINS_HTTPS_PORT']['value'] {
+      class { 'jenkins::cli':
+        protocol => 'https',
+        port     => $config_hash['JENKINS_HTTPS_PORT']['value'],
+      }
+      class { 'jenkins::cli_helper':
+        protocol => 'https',
+        port     => $config_hash['JENKINS_HTTPS_PORT']['value'],
+      }
+    } else {
+      include jenkins::cli
+      include jenkins::cli_helper
     }
   }
 

@@ -2,7 +2,10 @@
 #
 # Allow Jenkins commands to be issued from the command line
 #
-class jenkins::cli {
+class jenkins::cli (
+  $port     = undef,
+  $protocol = 'http',  
+) {
   if $caller_module_name != $module_name {
     fail("Use of private class ${name} by ${caller_module_name}")
   }
@@ -48,7 +51,7 @@ class jenkins::cli {
     require => Exec['jenkins-cli'],
   }
 
-  $port = jenkins_port()
+  $port_ = $port ? { undef => jenkins_port(), default => $port }
   $prefix = jenkins_prefix()
 
   # The jenkins cli command with required parameter(s)
@@ -56,7 +59,7 @@ class jenkins::cli {
     delete_undef_values([
       'java',
       "-jar ${::jenkins::cli::jar}",
-      "-s http://localhost:${port}${prefix}",
+      "-s ${protocol}://localhost:${port_}${prefix}",
       $::jenkins::_cli_auth_arg,
     ]),
     ' '
