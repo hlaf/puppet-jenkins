@@ -17,6 +17,7 @@
 # Jenkins credentials (via the CloudBees Credentials plugin
 #
 define jenkins::credentials (
+  $username = undef,
   $password,
   $description = 'Managed by Puppet',
   $private_key_or_path = '',
@@ -44,7 +45,7 @@ define jenkins::credentials (
       jenkins::cli::exec { "create-jenkins-credentials-${title}":
         command => [
           'create_or_update_credentials',
-          $title,
+          "'${username}'",
           "'${password}'",
           "'${uuid}'",
           "'${description}'",
