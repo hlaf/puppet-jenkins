@@ -36,6 +36,8 @@ define jenkins::credentials (
     Jenkins::Credentials[$title] ->
       Anchor['jenkins::end']
 
+  $username_ = $username ? { undef => $title, default => $username }
+
   case $ensure {
     'present': {
       validate_string($password)
@@ -45,7 +47,7 @@ define jenkins::credentials (
       jenkins::cli::exec { "create-jenkins-credentials-${title}":
         command => [
           'create_or_update_credentials',
-          "'${username}'",
+          "'${username_}'",
           "'${password}'",
           "'${uuid}'",
           "'${description}'",
