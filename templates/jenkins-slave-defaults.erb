@@ -51,7 +51,11 @@ EXECUTORS=<%= @executors -%>
 
 CLIENT_NAME="<%= @slave_name -%>"
 
+<% if @operatingsystem == 'Darwin' %>
+FSROOT=""
+<% else %>
 FSROOT="<%= @slave_home -%>"
+<% end %>
 
 DESCRIPTION="<%= @description -%>"
 
