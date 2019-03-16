@@ -78,7 +78,11 @@ if [ -n "$MASTER_URL" ]; then
 fi
 
 if [ -n "$LABELS" ]; then
+<% if @operatingsystem == 'Darwin' %>
+  LABELS_ARG=$(for label in $LABELS; do echo "-labels '$label'"; done)
+<% else %>
   LABELS_ARG="-labels '${LABELS}'"
+<% end %>
 fi
 
 if [ -n "$FSROOT" ]; then
