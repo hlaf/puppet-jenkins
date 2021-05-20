@@ -9,25 +9,22 @@ class jenkins::repo::el
 
   $repo_proxy = $::jenkins::repo_proxy
 
-  if $::jenkins::lts  {
-    yumrepo {'jenkins':
-      descr    => 'Jenkins',
-      baseurl  => 'http://pkg.jenkins-ci.org/redhat-stable/',
-      gpgcheck => 1,
-      gpgkey   => 'http://pkg.jenkins-ci.org/redhat/jenkins-ci.org.key',
-      enabled  => 1,
-      proxy    => $repo_proxy
-    }
+  $jenkins_repo_base_url = 'https://pkg.jenkins.io'
+  $gpg_key_filename      = 'jenkins.io.key'
+
+  if $jenkins::lts {
+    $baseurl = "${jenkins_repo_base_url}/redhat-stable/"
+  } else {
+    $baseurl = "${jenkins_repo_base_url}/redhat/"
+  }
+  
+  yumrepo {'jenkins':
+    descr    => 'Jenkins',
+    baseurl  => $baseurl,
+    gpgcheck => 1,
+    gpgkey   => "${base_url}${gpg_key_filename}",
+    enabled  => 1,
+    proxy    => $repo_proxy
   }
 
-  else {
-    yumrepo {'jenkins':
-      descr    => 'Jenkins',
-      baseurl  => 'http://pkg.jenkins-ci.org/redhat/',
-      gpgcheck => 1,
-      gpgkey   => 'http://pkg.jenkins-ci.org/redhat/jenkins-ci.org.key',
-      enabled  => 1,
-      proxy    => $repo_proxy
-    }
-  }
 }
