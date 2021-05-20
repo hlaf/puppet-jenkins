@@ -13,14 +13,14 @@ class jenkins::repo::el
   $gpg_key_filename      = 'jenkins.io.key'
 
   if $jenkins::lts {
-    $baseurl = "${jenkins_repo_base_url}/redhat-stable/"
+    $base_url = "${jenkins_repo_base_url}/redhat-stable/"
   } else {
-    $baseurl = "${jenkins_repo_base_url}/redhat/"
+    $base_url = "${jenkins_repo_base_url}/redhat/"
   }
-  
+
   yumrepo {'jenkins':
     descr    => 'Jenkins',
-    baseurl  => $baseurl,
+    baseurl  => $base_url,
     gpgcheck => 1,
     gpgkey   => "${base_url}${gpg_key_filename}",
     enabled  => 1,
