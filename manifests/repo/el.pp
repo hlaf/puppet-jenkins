@@ -7,24 +7,19 @@ class jenkins::repo::el
     fail("Use of private class ${name} by ${caller_module_name}")
   }
 
-  $repo_proxy = $::jenkins::repo_proxy
-
-  $jenkins_repo_base_url = 'https://pkg.jenkins.io'
-  $gpg_key_filename      = 'jenkins.io.key'
-
   if $jenkins::lts {
-    $base_url = "${jenkins_repo_base_url}/redhat-stable/"
+    $baseurl = "${jenkins::repo::base_url}/redhat-stable/"
   } else {
-    $base_url = "${jenkins_repo_base_url}/redhat/"
+    $baseurl = "${jenkins::repo::base_url}/redhat/"
   }
 
-  yumrepo {'jenkins':
+  yumrepo { 'jenkins':
     descr    => 'Jenkins',
-    baseurl  => $base_url,
+    baseurl  => $baseurl,
     gpgcheck => 1,
-    gpgkey   => "${base_url}${gpg_key_filename}",
+    gpgkey   => "${baseurl}${jenkins::repo::gpg_key_filename}",
     enabled  => 1,
-    proxy    => $repo_proxy
+    proxy    => $jenkins::repo_proxy,
   }
 
 }
