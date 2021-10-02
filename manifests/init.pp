@@ -247,7 +247,6 @@ class jenkins(
   $group                = $::jenkins::params::group,
   $default_plugins      = $::jenkins::params::default_plugins,
   $default_plugins_host = $::jenkins::params::default_plugins_host,
-  $purge_plugins        = $::jenkins::params::purge_plugins,
 ) inherits jenkins::params {
 
   validate_string($version)
