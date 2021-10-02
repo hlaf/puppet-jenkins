@@ -178,9 +178,6 @@
 #   * Redhat: ``/usr/lib/jenkins``
 #   * Debian: ``/usr/share/jenkins``
 #
-# @param sysconfdir
-#   Controls the path to the "sysconfig" file that stores jenkins service
-#   start-up variables
 #
 # cli_tries = 10 (default)
 #   Retries until giving up talking to jenkins API
@@ -240,7 +237,6 @@ class jenkins(
   $cli_try_sleep        = $jenkins::params::cli_try_sleep,
   $port                 = $jenkins::params::port,
   $libdir               = $jenkins::params::libdir,
-  $sysconfdir           = $jenkins::params::sysconfdir,
   $manage_datadirs      = $jenkins::params::manage_datadirs,
   $localstatedir        = $::jenkins::params::localstatedir,
   $executors            = undef,
