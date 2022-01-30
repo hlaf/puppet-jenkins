@@ -6,9 +6,11 @@ define jenkins::label(
 
   include ::jenkins::slave
 
-  concat::fragment { "${value}@jenkins::label":
-    target  => 'JENKINS_LABELS_FILE',
-    content => $value,
+  if $ensure == 'present' {
+    concat::fragment { "${value}@jenkins::label":
+      target  => 'JENKINS_LABELS_FILE',
+      content => $value,
+    }
   }
 
 }

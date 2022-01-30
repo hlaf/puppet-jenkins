@@ -46,7 +46,7 @@ MAXOPENFILES=8192
 MASTER_URL="<%= @masterurl -%>"
 AUTO_DISCOVERY_ADDRESS="<%= @autodiscoveryaddress -%>"
 <% if @collect_labels %>
-COLLECTED_LABELS="$(cat <%= @labels_file %>)"
+COLLECTED_LABELS="$(cat <%= @labels_file %> | grep -v '^#')"
 LABELS="<%= @_real_labels -%> ${COLLECTED_LABELS}"
 <% else %>
 LABELS="<%= @_real_labels -%>"

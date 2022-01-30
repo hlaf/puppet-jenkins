@@ -275,13 +275,15 @@ class jenkins::slave (
     Jenkins::Label <||> {}
 
     concat { 'JENKINS_LABELS_FILE':
-      ensure  => present,
-      path    => $labels_file,
-      mode    => '0600',
-      owner   => $defaults_user,
-      group   => $defaults_group,
-      before  => File["${defaults_location}/jenkins-slave"],
-      notify  => Service['jenkins-slave'],
+      ensure         => present,
+      path           => $labels_file,
+      mode           => '0600',
+      owner          => $defaults_user,
+      group          => $defaults_group,
+      ensure_newline => true,
+      warn           => true,
+      before         => File["${defaults_location}/jenkins-slave"],
+      notify         => Service['jenkins-slave'],
     } 
   }
 
