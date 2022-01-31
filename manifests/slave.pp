@@ -282,6 +282,7 @@ class jenkins::slave (
       group          => $defaults_group,
       ensure_newline => true,
       warn           => true,
+      force          => true, # Create the file even when no labels are present
       before         => File["${defaults_location}/jenkins-slave"],
       notify         => Service['jenkins-slave'],
     } 
