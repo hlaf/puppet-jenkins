@@ -114,6 +114,7 @@ class jenkins::slave (
   $slave_mode               = 'normal',
   $disable_ssl_verification = false,
   $labels                   = undef,
+  $collect_labels           = false,
   $tool_locations           = undef,
   $install_java             = $jenkins::params::install_java,
   $manage_client_jar        = true,
@@ -266,6 +267,25 @@ class jenkins::slave (
       system     => true,
       uid        => $slave_uid,
     }
+  }
+
+  $labels_file = "${defaults_location}/jenkins-slave.labels"
+
+  if $collect_labels {
+    Jenkins::Label <||> {}
+
+    concat { 'JENKINS_LABELS_FILE':
+      ensure         => present,
+      path           => $labels_file,
+      mode           => '0600',
+      owner          => $defaults_user,
+      group          => $defaults_group,
+      ensure_newline => true,
+      warn           => true,
+      force          => true, # Create the file even when no labels are present
+      before         => File["${defaults_location}/jenkins-slave"],
+      notify         => Service['jenkins-slave'],
+    } 
   }
 
   file { "${defaults_location}/jenkins-slave":
