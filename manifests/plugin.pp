@@ -175,8 +175,11 @@ define jenkins::plugin(
       proxy_server    => $::jenkins::proxy_server,
       cleanup         => false,
       extract         => false,
-      require         => File[$::jenkins::plugin_dir],
       notify          => Service['jenkins'],
+    }
+
+    if $::jenkins::manage_datadirs {
+      File[$::jenkins::plugin_dir] -> Archive[$plugin]
     }
 
     file { "${::jenkins::plugin_dir}/${plugin}" :
