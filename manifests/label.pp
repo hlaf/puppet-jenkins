@@ -4,12 +4,17 @@ define jenkins::label(
 ) {
   validate_string($value)
 
-  include ::jenkins::slave
+  if $::operatingsystem != 'windows' {
+    include ::jenkins::slave
+  }
 
   if $ensure == 'present' {
     concat::fragment { "${value}@jenkins::label":
       target  => 'JENKINS_LABELS_FILE',
-      content => $value,
+      content => $::operatingsystem ? {
+        'windows' => "${value} ",
+        default   => $value,
+      },
     }
   }
 
