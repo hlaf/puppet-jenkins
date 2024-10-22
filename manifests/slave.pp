@@ -113,6 +113,7 @@ class jenkins::slave (
   $slave_home               = '/home/jenkins-slave',
   $slave_mode               = 'normal',
   $disable_ssl_verification = false,
+  $disable_clients_unique_id = false,
   $labels                   = undef,
   $collect_labels           = false,
   $tool_locations           = undef,
@@ -139,6 +140,7 @@ class jenkins::slave (
   validate_absolute_path($slave_home)
   validate_re($slave_mode, '^normal$|^exclusive$')
   validate_bool($disable_ssl_verification)
+  validate_bool($disable_clients_unique_id)
   validate_string($tool_locations)
   validate_bool($install_java)
   validate_bool($manage_client_jar)
